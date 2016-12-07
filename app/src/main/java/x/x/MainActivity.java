@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
+                recyclerView.setOnTouchListener(null);
+                recyclerView.clearOnChildAttachStateChangeListeners();
                 recyclerView.setLayoutManager(layoutManager[index++ % 3]);
                 recyclerView.setAdapter(adapter);
                 Snackbar.make(view, recyclerView.getLayoutManager().getClass().getSimpleName(), Snackbar.LENGTH_SHORT).show();

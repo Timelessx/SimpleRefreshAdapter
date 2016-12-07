@@ -88,12 +88,14 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
         recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
             public void onChildViewAttachedToWindow(View view) {
+                //Log.e("onAttached()", "view: " + view);
                 if (view instanceof RefreshHeader)
                     isHeaderShowing = true;
             }
 
             @Override
             public void onChildViewDetachedFromWindow(View view) {
+                //Log.e("onDetached()", "view: " + view);
                 if (view instanceof RefreshHeader)
                     isHeaderShowing = false;
             }

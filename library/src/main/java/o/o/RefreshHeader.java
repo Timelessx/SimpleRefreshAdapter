@@ -48,7 +48,7 @@ public class RefreshHeader extends FrameLayout {
     private void initView() {
         height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getContext().getResources().getDisplayMetrics());
         LayoutInflater.from(getContext()).inflate(R.layout.header, this);
-        LayoutParams layoutParams = new LayoutParams(-1, 0);
+        LayoutParams layoutParams = new LayoutParams(-1, 1);
         setLayoutParams(layoutParams);
         iv_arrow = (ImageView) findViewById(R.id.iv_arrow);
         tv_status = (TextView) findViewById(R.id.tv_status);
@@ -116,12 +116,12 @@ public class RefreshHeader extends FrameLayout {
             setState(STATE_REFRESHING);
             smoothScrollTo(height);
         } else
-            smoothScrollTo(0);
+            smoothScrollTo(1);
         return flag;
     }
 
     public void reset() {
-        smoothScrollTo(0);
+        smoothScrollTo(1);
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 setState(STATE_NORMAL);
