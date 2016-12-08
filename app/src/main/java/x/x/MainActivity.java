@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         layoutManager[1] = new GridLayoutManager(this, 2);
         layoutManager[2] = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
 
-        adapter = new MyAdapter<String>(getData());
+        adapter = new MyAdapter<String>(new ArrayList<String>());
         adapter.setOnRefreshListener(new SimpleRefreshAdapter.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -67,6 +67,15 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, recyclerView.getLayoutManager().getClass().getSimpleName(), Snackbar.LENGTH_SHORT).show();
             }
         });
+
+        adapter.setRefreshing(true);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                adapter.setData(getData());
+                adapter.setRefreshing(false);
+            }
+        }, 3000);
     }
 
     private void refresh() {
@@ -111,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void addData(List<T> list) {
-            int size = mList.size();
+            int size = mList == null ? 0 : mList.size();
             mList.addAll(list);
             notifyItemRangeInserted(size + 1, list.size());
         }

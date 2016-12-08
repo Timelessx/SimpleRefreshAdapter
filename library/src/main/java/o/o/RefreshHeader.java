@@ -30,6 +30,7 @@ public class RefreshHeader extends FrameLayout {
     private ProgressBar mProgressBar;
     private TextView tv_status;
     private TextView tv_time;
+    private ObjectAnimator rotation_up, rotation_down;
     public int mState = STATE_NORMAL;
 
     public RefreshHeader(Context context) {
@@ -54,6 +55,9 @@ public class RefreshHeader extends FrameLayout {
         tv_status = (TextView) findViewById(R.id.tv_status);
         tv_time = (TextView) findViewById(R.id.tv_time);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        rotation_up = ObjectAnimator.ofFloat(iv_arrow, "Rotation", 0, 180).setDuration(150);
+        rotation_down = ObjectAnimator.ofFloat(iv_arrow, "Rotation", 180, 0).setDuration(150);
+        tv_time.setText(LAST_REFRESH_TIME + "Long Long ago");
     }
 
     public void setState(int state) {
@@ -62,17 +66,23 @@ public class RefreshHeader extends FrameLayout {
         switch (state) {
             case STATE_NORMAL:
                 iv_arrow.setVisibility(VISIBLE);
-                mProgressBar.setVisibility(GONE);
+                mProgressBar.setVisibility(INVISIBLE);
                 tv_time.setVisibility(VISIBLE);
-                iv_arrow.setRotation(0);
+                //iv_arrow.setRotation(0);
+                if (rotation_down.isRunning())
+                    rotation_down.cancel();
+                rotation_down.start();
                 tv_status.setText(NORMAL);
                 break;
             case STATE_RELEASE_TO_REFRESH:
-                iv_arrow.setRotation(180);
+                //iv_arrow.setRotation(180);
+                if (rotation_up.isRunning())
+                    rotation_up.cancel();
+                rotation_up.start();
                 tv_status.setText(RELEASE_TO_REFRESH);
                 break;
             case STATE_REFRESHING:
-                iv_arrow.setVisibility(GONE);
+                iv_arrow.setVisibility(INVISIBLE);
                 mProgressBar.setVisibility(VISIBLE);
                 tv_status.setText(REFRESHING);
                 break;
@@ -88,6 +98,14 @@ public class RefreshHeader extends FrameLayout {
         mState = state;
     }
 
+    public void setRefreshing(boolean refreshing) {
+        if (refreshing) {
+            ObjectAnimator.ofInt(this, "VisibleHeight", 0, height).setDuration(500).start();
+            setState(STATE_REFRESHING);
+        } else
+            reset();
+    }
+
     public void refreshCompleted() {
         tv_time.setText(LAST_REFRESH_TIME + new SimpleDateFormat("H:mm").format(new Date()));
         setState(STATE_COMPLETED);
@@ -99,7 +117,7 @@ public class RefreshHeader extends FrameLayout {
     }
 
     public void setVisibleHeight(int height) {
-        getLayoutParams().height = height < 0 ? 0 : height;
+        getLayoutParams().height = height < 0 ? 1 : height;
         requestLayout();
     }
 

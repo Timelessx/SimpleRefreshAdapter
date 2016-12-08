@@ -40,6 +40,11 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
         mOnRefreshListener = listener;
     }
 
+    public void setRefreshing(boolean refreshing) {
+        isRefreshing = refreshing;
+        mHeaderView.setRefreshing(refreshing);
+    }
+
     public void notifyRefreshCompleted() {
         mHeaderView.refreshCompleted();
         isRefreshing = false;
@@ -126,7 +131,7 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
                             }
                             break;
                     }
-                    return mHeaderView.getHeight() > 0;
+                    return mHeaderView.getHeight() > 1;
                 }
                 return false;
             }
@@ -177,6 +182,8 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
     @Override
     public int getItemCount() {
         int count = getCustomItemCount();
+        if (count == 0)
+            return mHeaderEnabled ? 1 : 0;
         if (mHeaderEnabled)
             count++;
         if (mFooterEnabled)
