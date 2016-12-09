@@ -1,6 +1,7 @@
 package o.o;
 
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
@@ -10,6 +11,20 @@ import android.view.ViewGroup;
 
 /**
  * @author https://github.com/timelessx
+ *         判断RecyclerView到达底部或顶部目前常见有以下方法：
+ *         <ol>
+ *         <li>1.通过 {@link LinearLayoutManager#findFirstCompletelyVisibleItemPosition()},
+ *         {@link LinearLayoutManager#findLastCompletelyVisibleItemPosition()},
+ *         {@link GridLayoutManager}继承自{@link LinearLayoutManager}同样方法,
+ *         {@link StaggeredGridLayoutManager#findFirstCompletelyVisibleItemPositions(int[])},
+ *         {@link StaggeredGridLayoutManager#findLastCompletelyVisibleItemPositions(int[])} (int[])}
+ *         这一系列方法会遍历view比较位置来判断，代价比较高</li>
+ *         <li>2.通过 {@link RecyclerView#canScrollVertically(int)} 判断</li>
+ *         </ol>
+ *         这两种方法都需要监听滚动事件,不停判断查找,最关键的是滑动过程中大部分时间都不是在顶部或底部，大量运算浪费了
+ *         本类提供了一种全新的判断是否滑动到顶部的方法,通过{@link #onViewAttachedToWindow(RecyclerView.ViewHolder)}与
+ *         {@link #onViewDetachedFromWindow(RecyclerView.ViewHolder)}或{@link RecyclerView.OnChildAttachStateChangeListener}来判断
+ *         这里只不过提供了一种全新的思路,至于功能和其他细节大家自己处理，这里只不过是一个简单示例
  *         <p>刷新完成后需要手动调用 {@link #notifyRefreshCompleted()} 来重置状态并隐藏Header</p>
  *         <p>加载更多完成后需要手动调用 {@link #notifyLoadMoreCompleted()} 重置状态</p>
  */
@@ -63,12 +78,21 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         //Log.e("onViewAttached()", "holder: " + holder);
+        if (holder.itemView instanceof RefreshHeader)   //^_^,到顶了
+            isHeaderShowing = true;
+
         ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
-        if (layoutParams instanceof StaggeredGridLayoutManager.LayoutParams) {
-            if (isHeader(holder.getLayoutPosition()) || isFooter(holder.getLayoutPosition())) {
-                ((StaggeredGridLayoutManager.LayoutParams) layoutParams).setFullSpan(true);
-            }
+        if (layoutParams instanceof StaggeredGridLayoutManager.LayoutParams && holder instanceof ViewHolder) {
+            //if (isHeader(holder.getLayoutPosition()) || isFooter(holder.getLayoutPosition()))
+            ((StaggeredGridLayoutManager.LayoutParams) layoutParams).setFullSpan(true);
         }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
+        //Log.e("onViewDetached()", "holder: " + holder);
+        if (holder.itemView instanceof RefreshHeader)   //o.o,顶部已经划过了
+            isHeaderShowing = false;
     }
 
     @Override
@@ -90,7 +114,7 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
             });
         }
 
-        recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+        /*recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
             public void onChildViewAttachedToWindow(View view) {
                 //Log.e("onAttached()", "view: " + view);
@@ -104,7 +128,7 @@ public abstract class SimpleRefreshAdapter<T extends RecyclerView.ViewHolder> ex
                 if (view instanceof RefreshHeader)
                     isHeaderShowing = false;
             }
-        });
+        });*/
 
         recyclerView.setOnTouchListener(new View.OnTouchListener() {
             private float mLastY;

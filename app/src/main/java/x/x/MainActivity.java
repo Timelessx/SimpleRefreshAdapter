@@ -131,16 +131,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+            ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
+            if (layoutParams instanceof StaggeredGridLayoutManager.LayoutParams) {
+                //if (position != 0 && position != getItemCount() - 1)
+                if (holder instanceof ViewHolder)
+                    layoutParams.height = holder.getLayoutPosition() % 2 == 0 ? 600 : 900;
+                //holder.itemView.setLayoutParams(layoutParams);    //在此设置item宽高，不需要调用setLayoutParams(),减少重绘次数
+            }
+        }
+
+        @Override
         protected void onBindCustomViewHolder(ViewHolder holder, int position) {
             holder.tv_position.setText("" + position);
-            ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
+            /*ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
             if (layoutParams instanceof StaggeredGridLayoutManager.LayoutParams) {
                 if (position % 2 == 0)
                     layoutParams.height = 900;
                 else
                     layoutParams.height = 600;
                 holder.itemView.setLayoutParams(layoutParams);
-            }
+            }*/
         }
 
         @Override
